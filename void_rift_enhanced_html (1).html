@@ -47,6 +47,8 @@ let combo = 0; // combo meter
 let comboTimer = 0; // combo decay
 let playerDamage = 1; // FIX: define player damage
 let pickupRange = 0; // FIX: used by Magnet upgrade
+const starColors = ['#7df9ff', '#ff8fd4', '#ffe066', '#8affc1', '#9d8cff'];
+let starColorIndex = 0;
 
 const player={ x:canvas.width/2, y:canvas.height/2, r:12, angle:-Math.PI/2 };
 const bullets=[];
@@ -98,6 +100,7 @@ function fire(){
 /* ================== WAVES & ENEMIES ================== */
 function startWave(){ enemiesLeft=5+wave*2;
   waveFlash = 30; // trigger wave pulse
+  if(wave % 3 === 0){ starColorIndex = (starColorIndex + 1) % starColors.length; }
   // Spawn diamonds every 2 waves
   if(wave % 2 === 0){ spawnDiamonds(); }
 }
@@ -196,6 +199,12 @@ function update(){
   time++; if(time%25===0) spawnEnemy();
 
   bullets.forEach(b=>{ b.x+=b.vx; b.y+=b.vy; });
+  for(let i=bullets.length-1;i>=0;i--){
+    const b = bullets[i];
+    if(b.x < -60 || b.x > canvas.width + 60 || b.y < -60 || b.y > canvas.height + 60){
+      bullets.splice(i,1);
+    }
+  }
 
   enemies.forEach(e=>{
     // SQUID behavior: spins and sweeps limbs across screen
@@ -441,7 +450,7 @@ function draw(){
   // --- Wave pulse flash ---
   if(waveFlash>0){
     ctx.globalAlpha = waveFlash/30 * 0.25;
-    ctx.fillStyle = '#7df9ff';
+    ctx.fillStyle = starColors[starColorIndex];
     ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.globalAlpha = 1;
     waveFlash--;
@@ -449,7 +458,7 @@ function draw(){
   // --- draw background stars ---
   bgStars.forEach(st=>{
     ctx.globalAlpha = st.a;
-    ctx.fillStyle = '#7df9ff';
+    ctx.fillStyle = starColors[starColorIndex];
     ctx.fillRect(st.x, st.y, 1.5, 1.5);
   });
   ctx.globalAlpha = 1;
@@ -458,7 +467,7 @@ function draw(){
     const s=stars[i];
     s.x+=s.vx; s.y+=s.vy; s.life--;
     ctx.globalAlpha=Math.max(s.life/60,0);
-    ctx.strokeStyle='#7df9ff';
+    ctx.strokeStyle=starColors[starColorIndex];
     ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*6,s.y-s.vy*6); ctx.stroke();
     ctx.globalAlpha=1;
     if(s.life<=0 || s.y>canvas.height+40) stars.splice(i,1);
